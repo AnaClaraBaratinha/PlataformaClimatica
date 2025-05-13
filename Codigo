@@ -1,0 +1,55 @@
+#include <DHT.h> //biblioteca pro dht11
+
+#define DHTPIN 4           // Pino do DHT11
+#define DHTTYPE DHT11      // Tipo do sensor DHT
+#define ULTRASONIC_PIN 34  // Pino analógico do MaxSonar
+#define LDR_PIN 35         // Pino analógico do LDR
+
+DHT dht(DHTPIN, DHTTYPE); //objeto dht11
+
+const float DISTANCIA_SECA = 600.0; // distancia ultrassonico-solo(cm)
+
+void setup() 
+{
+  Serial.begin(115200);
+  dht.begin();
+
+  analogReadResolution(12); // resolução ADC do esp
+  delay(1000);
+}
+
+void loop() 
+{
+  float temperatura = dht.readTemperature();
+  float umidade = dht.readHumidity();
+
+  int leituraUltrassom = analogRead(ULTRASONIC_PIN);
+  float tensao = leituraUltrassom * (3.3 / 4095.0); // conversao volts -> 1v=1000cm
+  float distancia_cm = tensao * 1000.0;//datasheet do maxsonar             
+  float nivel_alagamento = DISTANCIA_SECA - distancia_cm;
+  if (nivel_alagamento < 0) nivel_alagamento = 0;
+
+  int valor_ldr = analogRead(LDR_PIN);
+  float porcentagem_luz = (valor_ldr / 4095.0) * 100.0;
+
+  Serial.print("Temperatura: ");
+  Serial.print(temperatura);
+  Serial.println(" °C");
+
+  Serial.print("Umidade: ");
+  Serial.print(umidade);
+  Serial.println(" %");
+
+  //Serial.print("distancia ultrassonico-solo: ");
+  //Serial.print(distancia_cm);
+  Serial.print("Nível de alagamento: ");
+  Serial.print(nivel_alagamento);
+  Serial.println(" cm");
+
+  Serial.print("Luz (LDR): ");
+  Serial.print(porcentagem_luz);
+  Serial.println(" %");
+
+  Serial.println(####################################################");
+  delay(1000);
+}
